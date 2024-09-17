@@ -17,14 +17,14 @@ class Requests
         }
     }
 
-    private static function getRequests(): void 
+    private static function getRequest(): void 
     {
         $resourceName = self::getResourceName();
         switch ($resourceName) {
             case 'counties':
                 $db = new CountyRepository();
-                //$resourceId = self::getResourceId();
-                //$code = 200;
+                $resourceId = self::getResourceId();
+                $code = 200;
                 $entities = $db->getAll();
                 if (empty($entities)) {
                     $code = 404;
@@ -43,6 +43,17 @@ class Requests
         $result = $arrUri[count(value: $arrUri) - 1];
         if (is_numeric(value: $result)) {
             $result = $arrUri[count(value: $arrUri) - 2];
+        }
+
+        return $result;
+    }
+
+    private static function getResourceId(): int 
+    {
+        $arrUri = self::getArrUri(requestUri: $_SERVER['REQUEST_URI']);
+        $result = 0;
+        if (is_numeric(value: $arrUri[count(value: $arrUri) - 1])) {
+            $result = $arrUri[count(value: $arrUri) - 1];
         }
 
         return $result;

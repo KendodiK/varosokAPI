@@ -9,13 +9,9 @@ class BaseRepository extends DB
 
     public function getAll(): array
     {
-        $query = $this->select() . "ORDER BY name";
+        $query = "SELECT * FROM  `{$this->tableName}` ORDER BY name";
 
         return $this->mysqli->query(query: $query)->fetch_all(mode: MYSQLI_ASSOC);
     }
 
-    public function select(): string
-    {
-        return "SELECT * FROM '{$this->tableName}' ";
-    }
 }
