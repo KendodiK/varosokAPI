@@ -1,6 +1,7 @@
 <?php
 namespace App\Html;
 
+use App\Repositories\BaseRepository;
 use App\Repositories\CountyRepository;
 
 class Requests 
@@ -13,6 +14,12 @@ class Requests
                 break;
             case "DELETE":
                 self::deleteRequest();
+                break;
+            case "POST":
+                self::postRequest();
+                break;
+            case "PUT":
+                self::putRequest();
                 break;
             default:
                 echo 'Unknown requset type';
@@ -33,7 +40,10 @@ class Requests
                     $code = 404;
                 }
                 if ($resourceId != 0) {
-                    $entity = $db->getOneById($resourceId);
+                    if(empty($entity)){
+                        $entity = $db->getOneById($resourceId);
+                        $code = 404;
+                    }
                     Response::response($entity, $code); 
                     break;
                 }
@@ -47,6 +57,10 @@ class Requests
 
     private static function deleteRequest(): void  
     {
+        $id = self::getResourceId();
+        if(!$id){
+            Response::response([], "404", "not found");
+        }
         $resourceName = self::getResourceName();
         switch ($resourceName) {
             case 'counties':
@@ -64,6 +78,35 @@ class Requests
                 Response::response([], 404, $_SERVER['REQUEST_URI'] . " not found");
                 break;
         }
+    }
+
+    private static function postRequest()
+    {
+        $resourceName = self::getResourceName();
+        switch ($resourceName) {
+            case 'counties':
+                $data = self::getRequestData();
+                if (isset($data['name'])) {
+                    $db = new CountyRepository();
+                    $newId = $db->create($data);
+                    $code = 201;
+                    if (!$newId) {
+                        $code = 404; //bad request
+                    }
+                }
+                Response::response(['id' => $newId], $code);
+                break;
+            default:
+                Response::response([], 404, $_SERVER['REQUEST_URI'] . " not found");
+                break;
+        }
+    }
+
+    private static function putRequest()
+    {
+        $data = self::getRequestData();
+        $id = $data['id'];
+        $db = new BaseRepository();
     }
 
     private static function getResourceName(): string
@@ -93,6 +136,9 @@ class Requests
         return explode("/", $requestUri) ?? null;
     }
 
-
+    private static function getRequestData(): ?array
+    {
+        return json_decode(file_get_contents("php://input"), true);
+    }
 }
 
