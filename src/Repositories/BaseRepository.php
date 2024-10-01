@@ -47,7 +47,7 @@ class BaseRepository extends DB
         $sql = "INSERT INTO `%s` (%s) VALUES (%s)";
         $sql = sprintf($sql, $this->tableName, $fields, $values);
         $this->mysqli->query($sql);
-        $lastInserted = $this->mysqli->query("SELECT LAST_INSERT_ID() id;")->fetch_all(MYSQL_ASSOC);
+        $lastInserted = $this->mysqli->query("SELECT LAST_INSERT_ID() id;")->fetch_assoc();
 
         return $lastInserted['id'];
     }
@@ -67,6 +67,6 @@ class BaseRepository extends DB
         $query = sprintf($query, $set);
         $this->mysqli->query($query);
 
-        return $this->find($id);
+        return $this->getOneById($id);
     }
 }

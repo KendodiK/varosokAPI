@@ -104,9 +104,29 @@ class Requests
 
     private static function putRequest()
     {
-        $data = self::getRequestData();
-        $id = $data['id'];
-        $db = new BaseRepository();
+        $id = self::getResourceId();
+        if (!$id) {
+            Response::response([], 400, Response::STATUSES[400]);
+            return;
+        }
+        $resourceName = self::getResourceName();
+        switch ($resourceName) {
+            case 'counties':
+                $data = self::getRequestData();
+                $db = new CountyRepository();
+                $entity = $db->getOneById($id);
+                $code = 404;
+                if($entity) {
+                    $result = $db->update($id, ['name' => $data['name']]);
+                    if($result) {
+                        $code = 201;
+                    }
+                }
+                Response::response([], $code);
+                break;
+            default;
+                Response::response([], 404, $_SERVER['REQUEST_URI']);
+        }
     }
 
     private static function getResourceName(): string
