@@ -3,6 +3,7 @@ namespace App\Html;
 
 use App\Repositories\BaseRepository;
 use App\Repositories\CountyRepository;
+use App\Repositories\CityRespository;
 
 class Requests 
 {
@@ -33,19 +34,38 @@ class Requests
         switch ($resourceName) {
             case 'counties':
                 $db = new CountyRepository();
-                $resourceId = self::getResourceId();
+                $resourceId = self::getResourceId((int)1);
                 $code = 200;
                 $entities = $db->getAll();
                 if (empty($entities)) {
                     $code = 404;
                 }
                 if ($resourceId != 0) {
+                    $entity = $db->getOneById($resourceId);
                     if(empty($entity)){
-                        $entity = $db->getOneById($resourceId);
                         $code = 404;
                     }
                     Response::response($entity, $code); 
                     break;
+                }
+                Response::response($entities, $code);
+                break;
+            case 'cities':
+                $dbCity = new CityRespository();
+                $resourceId = self::getResourceId( (int)1);
+                $code = 200;
+                $countyId = self::getResourceId((int)2);
+                $entities = $dbCity->getCityByCountyId($countyId);
+                if ($resourceId != 0) {
+                    $entity = $dbCity->getOneById($resourceId);
+                    if(empty($entity)){
+                        $code = 404;
+                    }
+                    Response::response($entity, $code); 
+                    break;
+                }
+                if (empty($entities)) {
+                    $code = 404;
                 }
                 Response::response($entities, $code);
                 break;
@@ -57,7 +77,7 @@ class Requests
 
     private static function deleteRequest(): void  
     {
-        $id = self::getResourceId();
+        $id = self::getResourceId((int)1);
         if(!$id){
             Response::response([], "404", "not found");
         }
@@ -65,14 +85,25 @@ class Requests
         switch ($resourceName) {
             case 'counties':
                 $db = new CountyRepository();
-                $resourceId = self::getResourceId();
+                $resourceId = self::getResourceId((int)1);
                 $code = 204;
                 if (!$resourceId) {
                     $code = 404;
                 }
                 $deletedEntity = $db->deleteById($resourceId);
                 $data = [];
-                Response::response($data,$code); 
+                Response::response($data,$code,$deletedEntity); 
+                break;
+            case 'cities':
+                $db = new CityRespository();
+                $resourceId = self::getResourceId((int)1);
+                $code = 204;
+                if (!$resourceId) {
+                    $code = 404;
+                }
+                $deletedEntity = $db->deleteById($resourceId);
+                $data = [];
+                Response::response($data,$code,$deletedEntity); 
                 break;
             default:
                 Response::response([], 404, $_SERVER['REQUEST_URI'] . " not found");
@@ -96,6 +127,18 @@ class Requests
                 }
                 Response::response(['id' => $newId], $code);
                 break;
+            case 'cities':
+                $data = self::getRequestData();
+                if (isset($data['city'])) {
+                    $db = new CityRespository();
+                    $newId = $db->create($data);
+                    $code = 201;
+                    if (!$newId) {
+                        $code = 404; //bad request
+                    }
+                }
+                Response::response(['id' => $newId], $code);
+                break;
             default:
                 Response::response([], 404, $_SERVER['REQUEST_URI'] . " not found");
                 break;
@@ -104,7 +147,7 @@ class Requests
 
     private static function putRequest()
     {
-        $id = self::getResourceId();
+        $id = self::getResourceId((int)1);
         if (!$id) {
             Response::response([], 400, Response::STATUSES[400]);
             return;
@@ -140,12 +183,12 @@ class Requests
         return $result;
     }
 
-    private static function getResourceId(): int 
+    private static function getResourceId($back): int 
     {
         $arrUri = self::getArrUri($_SERVER['REQUEST_URI']);
         $result = 0;
-        if (is_numeric($arrUri[count(value: $arrUri) - 1])) {
-            $result = $arrUri[count(value: $arrUri) - 1];
+        if (is_numeric($arrUri[count(value: $arrUri) - $back])) {
+            $result = $arrUri[count(value: $arrUri) - $back];
         }
 
         return $result;

@@ -11,7 +11,7 @@ class BaseRepository extends DB
     {
         $query = "SELECT * FROM  `{$this->tableName}` ORDER BY name";
 
-        return $this->mysqli->query(query: $query)->fetch_all(mode: MYSQLI_ASSOC);
+        return $this->mysqli->query( $query)->fetch_all( MYSQLI_ASSOC);
     }
 
     public function getOneById(int $id): array
