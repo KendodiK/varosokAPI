@@ -1,4 +1,8 @@
 <?php
+/**
+ * @author Endrődi Kálmán
+ */
+
 session_start();
 include './vendor/autoload.php';
 

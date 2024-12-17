@@ -1,6 +1,11 @@
 <?php
 namespace App\Repositories;
 
+/**
+ * @author Endrődi Kálmán
+ */
+
+
 use App\Database\DB;
 
 class CityRespository extends BaseRepository
@@ -15,5 +20,12 @@ class CityRespository extends BaseRepository
         $query = "SELECT * FROM  `{$this->tableName}` WHERE id_county = {$countyId}";
 
         return $this->mysqli->query( $query)->fetch_all( MYSQLI_ASSOC);    
+    }
+
+    public function getAll(): array
+    {
+        $query = "SELECT * FROM  `{$this->tableName}` ORDER BY 'city'";
+
+        return $this->mysqli->query( $query)->fetch_all( MYSQLI_ASSOC);
     }
 }

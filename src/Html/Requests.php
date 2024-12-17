@@ -1,7 +1,10 @@
 <?php
 namespace App\Html;
 
-use App\Repositories\BaseRepository;
+/**
+ * @author Endrődi Kálmán
+ */
+
 use App\Repositories\CountyRepository;
 use App\Repositories\CityRespository;
 
@@ -27,6 +30,51 @@ class Requests
                 break;
         }
     }
+
+    /**
+     * Summary of getCounties
+     * @api {get} /counties Get list of counties
+     * @apiGroup Counties
+     * @apiName getCounties
+     * @apiVersion 1.0.0
+     * 
+     * @apiSuccessExample {json} Success-Response:
+     *      HTTP/1.1 200
+     *      {
+     *        "data": [
+     *           {
+     *            "id": "3",
+     *            "name": "Baranya"
+     *           }, ],
+     *         "message": "OK",
+     *         "code": 200
+     *      }
+     */
+    private static function getCounties() {}
+
+     /**
+     * Summary of getCities
+     * @api {get} /counties/:idCounty/cities Get list of cities
+     * @apiParam {Number} idCounty Unique county id
+     * @apiGroup Cities
+     * @apiVersion 1.0.0
+     * @apiName getCities
+     * 
+     * @apiSuccessExample {json} Success-Response:
+     *      HTTP/1.1 200
+     *      {
+     *        "data": [
+     *           {
+     *              "id": "251",
+     *              "zip_code": "5830",
+     *              "city": "Battonya",
+     *              "id_county": "4"
+     *           }, ],
+     *         "message": "OK",
+     *         "code": 200
+     *      }
+     */
+    private static function getCities() {}
 
     private static function getRequest(): void 
     {
@@ -56,6 +104,9 @@ class Requests
                 $code = 200;
                 $countyId = self::getResourceId((int)2);
                 $entities = $dbCity->getCityByCountyId($countyId);
+                if($countyId == null){
+                    $entities = $dbCity->getAll();
+                }
                 if ($resourceId != 0) {
                     $entity = $dbCity->getOneById($resourceId);
                     if(empty($entity)){
@@ -74,6 +125,45 @@ class Requests
                 break;
         }
     }
+
+    /**
+     * @api {delete} /counties/:id Delete county by id
+    * @apiParam {Number} id County unique ID
+    * @apiName delete
+    * @apiGroup Counties
+    * @apiVersion 1.0.0
+    *
+    * @apiSuccessExample {json} Success-Response:
+    *          HTTP/1.1 204 No content
+    *          {
+    *              "data":[],
+    *              "message":"No content",
+    *              "code":204
+    *          }
+    *
+    */
+    
+    private static function deleteCounty() {}
+
+    /**
+     * @api {delete} /counties/:idCounty/cities/:id Delete city by id
+    * @apiParam {Number} idCounty County unique ID
+    * @apiParam {Number} id City unique ID
+    * @apiName delete
+    * @apiGroup Cities
+    * @apiVersion 1.0.0
+    *
+    * @apiSuccessExample {json} Success-Response:
+    *          HTTP/1.1 204 No content
+    *          {
+    *              "data":[],
+    *              "message":"No content",
+    *              "code":204
+    *          }
+    *
+    */   
+
+    private static function deleteCity(){}
 
     private static function deleteRequest(): void  
     {
@@ -111,6 +201,43 @@ class Requests
         }
     }
 
+    /**
+    * @api {post} /counties Create new county
+    * @apiName post
+    * @apiGroup Counties
+    * @apiVersion 1.0.0
+    *
+    * @apiSuccessExample {json} Success-Response:
+    *          HTTP/1.1 201 No content
+    *          {
+    *              "data":[],
+    *              "message":"No content",
+    *              "code":204
+    *          }
+    *
+    */
+
+    private static function postCounty(){}
+
+    /**
+    * @api {post} /countyes/:idCounty/cities Create new city
+    * @apiName post
+    * @apiParam idCounty County unique ID
+    * @apiGroup Cities
+    * @apiVersion 1.0.0
+    *
+    * @apiSuccessExample {json} Success-Response:
+    *          HTTP/1.1 201 No content
+    *          {
+    *              "data":[],
+    *              "message":"No content",
+    *              "code":204
+    *          }
+    *
+    */
+
+    private static function postCity(){}
+
     private static function postRequest()
     {
         $resourceName = self::getResourceName();
@@ -145,6 +272,22 @@ class Requests
         }
     }
 
+      /**
+      * @api {put} /counties/:id
+      * @apiParam {Number} id County unique ID
+      * @apiName put
+      * @apiGroup Counties
+      * @apiVersion 1.0.0
+      *
+      * @apiSuccessExample {json} Success-Response:
+      *          HTTP/1.1 204 No content
+      *          {
+      *              "data":[],
+      *              "message":"No content",
+      *              "code":204
+      *          }
+      */
+
     private static function putRequest()
     {
         $id = self::getResourceId((int)1);
@@ -167,6 +310,19 @@ class Requests
                 }
                 Response::response([], $code);
                 break;
+            case 'cities':
+                $data = self::getRequestData();
+                $db = new CityRespository();
+                $entity = $db->getOneById($id);
+                $code = 404;
+                if($entity) {
+                    $result = $db->update($id, ['city' => $data['name'], 'zip_code' => $data['zip-code'], 'id_county' => $data['county-id']]);
+                    if($result) {
+                        $code = 201;
+                    }
+                }
+                Response::response([], $code);
+                break;
             default;
                 Response::response([], 404, $_SERVER['REQUEST_URI']);
         }
@@ -183,6 +339,35 @@ class Requests
         return $result;
     }
 
+     /**
+      * @api {get} /user/counties/{id} Get one county by id
+      * @apiName get_by_id
+      * @apiGroup Counties
+      * @apiVersion 1.0.0
+      * 
+      * @apiSuccess {Object[]} City      List of city properties.
+      * @apiSuccess {Number} counties.id     County id.
+      * @apiSuccess {String} counties.name   County name.
+      * 
+      * @apiSuccessExample {json} Success-Response:
+      *          HTTP/1.1 200 OK
+      *          {
+      *              "data":[
+      *                  {"id":4, "name": "Békés"},
+      *              ],
+      *              "message":"OK",
+      *              "code":200
+      *          }
+      * 
+      * @apiError {json} Object not found.
+      *          HTTP/1.1 404 Not Found
+      *          {
+      *              "data": [],
+      *              "message": "not found",
+      *              "code: 404
+      *          }
+      */
+
     private static function getResourceId($back): int 
     {
         $arrUri = self::getArrUri($_SERVER['REQUEST_URI']);
@@ -194,10 +379,41 @@ class Requests
         return $result;
     }
 
+    /**
+    * @api {get} /counties/:idCounty/cities/:id Get one city by id
+    * @apiParam {Number} idCounty County id, can be any county id
+    * @apiParam {Number} id City unique ID
+    * @apiName get
+    * @apiGroup Cities
+    * @apiVersion 1.0.0
+    *
+    * @apiSuccessExample {json} Success-Response:
+    *          HTTP/1.1 200 OK
+    *           {
+    *               "data": [
+    *               {
+    *               "id": "55",
+    *               "zip_code": "3717",
+    *               "city": "Alsódobsza",
+    *               "id_county": "5"
+    *               }
+    *             ],
+    *               "message": "OK",
+    *               "code": 200
+    *           }
+    *
+    */   
+
+    private static function getCityId(){}
+
     private static function getArrUri(string $requestUri): ?array
     {
         return explode("/", $requestUri) ?? null;
     }
+
+
+
+    
 
     private static function getRequestData(): ?array
     {

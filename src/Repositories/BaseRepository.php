@@ -1,6 +1,11 @@
 <?php
 namespace App\Repositories;
 
+/**
+ * @author Endrődi Kálmán
+ */
+
+
 use App\Database\DB;
 
 class BaseRepository extends DB

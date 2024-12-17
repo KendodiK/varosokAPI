@@ -1,6 +1,11 @@
 <?php
 namespace App\Database;
 
+/**
+ * @author Endrődi Kálmán
+ */
+
+
 class DB
 {
     const HOST = 'localhost';

@@ -1,6 +1,11 @@
 <?php
 namespace App\Html;
 
+/**
+ * @author Endrődi Kálmán
+ */
+
+
 class Response
 {
     const STATUSES = [
